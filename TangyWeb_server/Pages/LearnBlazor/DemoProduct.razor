@@ -1,0 +1,70 @@
+﻿@page "/learnBlazor/demoproduct"
+
+<h3>Added Favourites : @FavouriteCount</h3> <br />
+<h4>Last Selected Item: @LastSelected</h4>
+<div class="row border border-2 border-primary rounded-2 p-2 bg-primary bg-opacity-10">
+    @foreach (var products in Products)
+    {
+        <_ProductSample demo_Product="products" OnFavouriteChange="UpdateFavouriteCount" OnProductClick="UpdateLastSelected">
+        </_ProductSample>
+    }
+</div>
+
+@code {
+    public int FavouriteCount { get; set; } = 0;
+    public string LastSelected { get; set; } = "";    
+
+    public void UpdateLastSelected(string LastSelect)
+    {
+        LastSelected = LastSelect;
+    }
+
+    public void UpdateFavouriteCount(bool IsFav)
+    {
+        if (IsFav) FavouriteCount++;
+        else FavouriteCount--;
+    }
+
+    List<Demo_Product> Products = new();
+
+    protected override void OnInitialized()
+    {
+        Products.Add(new()
+            {
+                Id = 1,
+                Name = "Limon",
+                IsActive = false,
+                ProductProps = new()
+            {
+                new DemoProductProp{Id=1, Key="Flavor", Value="Rose"},
+                new DemoProductProp{Id=2, Key="Color", Value="Red"},
+                new DemoProductProp{Id=3, Key="Size", Value="24"},
+            }
+            });
+
+        Products.Add(new()
+            {
+                Id = 2,
+                Name = "Mustafiz",
+                IsActive = false,
+                ProductProps = new()
+            {
+                new DemoProductProp{Id=1, Key="Flavor", Value="Beli"},
+                new DemoProductProp{Id=2, Key="Color", Value="White"},
+                new DemoProductProp{Id=3, Key="Size", Value="36"},
+            }
+            });
+        Products.Add(new()
+            {
+                Id = 3,
+                Name = "kamruzzaman",
+                IsActive = true,
+                ProductProps = new()
+            {
+                new DemoProductProp{Id=1, Key="Flavor", Value="Beli"},
+                new DemoProductProp{Id=2, Key="Color", Value="White"},
+                new DemoProductProp{Id=3, Key="Size", Value="30"},
+            }
+            });
+    }
+}

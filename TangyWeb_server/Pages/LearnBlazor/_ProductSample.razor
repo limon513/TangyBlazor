@@ -1,0 +1,40 @@
+﻿
+<div class="col col-6 border border-1 border-secondary"
+    @onclick = "(args)=>HandleOnProductClick(args,demo_Product.Name)">
+    <h3>Product-@demo_Product.Id</h3>
+    <p>Add to Favourite <input type="checkbox" @onchange=FavouriteChange/> </p>
+    <p>Name: @demo_Product.Name</p>
+    <p>
+        Show Properties <input type="checkbox" @bind="ShowProperty"/>
+    </p>
+    <div>
+        @if (ShowProperty)
+        {
+            foreach(var properties in demo_Product.ProductProps)
+            {
+                <p>@properties.Key - @properties.Value</p>
+            }
+        }
+    </div>
+</div>
+
+
+@code{
+    [Parameter]
+    public Demo_Product demo_Product { get; set; }
+    public bool ShowProperty { get; set; } = false;
+    [Parameter]
+    public EventCallback<bool> OnFavouriteChange {get; set;}
+    public async Task FavouriteChange(ChangeEventArgs e)
+    {
+        await OnFavouriteChange.InvokeAsync((bool)e.Value);
+    }
+    [Parameter]
+    public EventCallback<string> OnProductClick { get; set; }
+
+    public async Task HandleOnProductClick(MouseEventArgs e, String ProductName)
+    {
+        await OnProductClick.InvokeAsync(ProductName);
+    }
+
+}

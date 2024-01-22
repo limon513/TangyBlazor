@@ -1,0 +1,76 @@
+﻿@page "/category/create"
+@page "/category/create/{Id:int}"
+
+@inject ICategoryRepository _categoryrepo
+@inject NavigationManager _nav
+
+<div class="row">
+    <h3 class="text-primary">@Title Category</h3>
+    @if (!isLoaded)
+    {
+        <div id="loadingGif">
+            <img src="Hourglass.gif"/>
+        </div>
+    }
+    else
+    {
+        <div class="col-6">
+            <EditForm Model="categoryDTO" OnValidSubmit="UpsertCategory">
+                <DataAnnotationsValidator />
+                <div class="form-group">
+                    <titel>Name</titel>
+                    <InputText @bind-Value="categoryDTO.Name" class="form-control"></InputText>
+                    <ValidationMessage For="()=>categoryDTO.Name" />
+                </div>
+                <div class="form-group mt-2">
+                    <button class="btn btn-primary btn-submit">@Title</button>
+                    <NavLink href="/category" class="btn btn-secondary">Back to Index</NavLink>
+                </div>
+            </EditForm>
+        </div>
+    }
+
+</div>
+
+@code {
+    private string Title { get; set; } = "Create";
+    private CategoryDTO categoryDTO { get; set; } = new CategoryDTO();
+    [Parameter]
+    public int Id { get; set; } = 0;
+    private bool isLoaded { get; set; } = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if(Id!=0)
+        {
+            Title = "Edit"; isLoaded = false;
+        }
+        await Task.Run(LoadToUpdate);
+    }
+    void LoadToUpdate()
+    {
+        if (Id != 0)
+        {
+            categoryDTO = _categoryrepo.GetById(Id);
+            isLoaded = true;
+        }
+    }
+
+    void UpsertCategory()
+    {
+        if (Id != 0)
+        {
+            isLoaded = false;
+            _categoryrepo.Update(categoryDTO);
+            isLoaded = true;
+            _nav.NavigateTo("/category");
+        }
+        else
+        {
+            isLoaded = false;
+            _categoryrepo.Create(categoryDTO);
+            isLoaded = true;
+            _nav.NavigateTo("/category");
+        }
+    }
+}
