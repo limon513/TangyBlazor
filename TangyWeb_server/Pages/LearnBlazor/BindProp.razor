@@ -1,0 +1,138 @@
+﻿@page "/bindprop"
+
+<h3 class="text-success">Assignment 1 ( Two way data binding )</h3>
+<br />
+<div class="row">
+    <div class="col-9 p-3 border">
+        <h3 class="text-primary">Product Summary</h3><hr />
+        Product id: @Product.Id <br />
+        Name: @Product.Name<br />
+        Active: @Product.IsActive<br />
+        Price: @Product.Price<br />
+        This Product is: @(Product.IsActive ? "Active" : "Not Active")<br />
+        Product Properties Key : @ProductPropKey <br />
+        @if (!String.IsNullOrWhiteSpace(ProductPropKey))
+        {
+            <p>Product Properties Value: @(Product.ProductProps.FirstOrDefault(obj => obj.Key == ProductPropKey).Value)</p>
+        }
+    </div>
+
+    <div class="col-3 p-3 border border-2 border-primary rounded-2">
+        <div>
+            Active
+            <input type="checkbox" @bind="Product.IsActive" />
+        </div>
+        <div>
+            AltPrice:
+            <input type="number" @bind="Product.Price" @bind:event="oninput" />
+        </div>
+        <div>
+            Product Properties:
+            <select disabled="@(!Product.IsActive)" @bind="@ProductPropKey">
+                @foreach (var prop in Product.ProductProps)
+                {
+                    <option value="@prop.Key">@prop.Key</option>
+                }
+            </select>
+        </div>
+    </div>
+</div>
+<br />
+
+<div class="row p-2 border border-2 border-primary rounded-2">
+    <h3 class="text-primary">Product List</h3><br />
+    <hr />
+    <table>
+        <tr>
+            <th>Product name<hr /></th>
+            <th>Product Price<hr /></th>
+            <th>Product Active<hr /></th>
+        </tr>
+        @foreach (var product in Products)
+        {
+            <tr class="bg-primary bg-opacity-25">
+                <td>
+                    <input type="text" @bind="product.Name" @bind:event="oninput" />
+                </td>
+                <td>
+                    <input type="number" @bind="product.Price" @bind:event="oninput" />
+                </td>
+                <td>
+                    <input type="checkbox" @bind="product.IsActive" />
+                </td>
+            </tr>
+        }
+    </table>
+</div><br />
+
+<div class="row p-2 mb-5 border border-2 border-primary rounded-2">
+    <h3>Product Description</h3><br /><hr />
+    @foreach(var product in Products)
+    {
+        <p>@product.Name [@product.Price]$ is @(product.IsActive?"active":"not active")</p>
+    }
+</div>
+
+
+
+
+@code {
+    private string ProductPropKey = "";
+    Tangy_Models.Demo_Product Product = new()
+        {
+            Id = 1,
+            Name = "Brugen",
+            IsActive = true,
+            Price = 10.99m,
+            ProductProps = new List<Tangy_Models.DemoProductProp>()
+            {
+                new Tangy_Models.DemoProductProp{Id=1, Key="Color", Value="Black"},
+                new Tangy_Models.DemoProductProp{Id=2, Key="Flavor", Value="Pagla"},
+                new Tangy_Models.DemoProductProp{Id=3, Key="Size", Value="36"}
+            }
+        };
+
+    List<Demo_Product> Products = new();
+
+    protected override void OnInitialized()
+    {
+        Products.Add(new()
+            {
+                Id = 1,
+                Name = "Limon",
+                IsActive = false,
+                ProductProps = new()
+            {
+                new DemoProductProp{Id=1, Key="Flavor", Value="Rose"},
+                new DemoProductProp{Id=2, Key="Color", Value="Red"},
+                new DemoProductProp{Id=3, Key="Size", Value="24"},
+            }
+            });
+
+        Products.Add(new()
+            {
+                Id = 2,
+                Name = "Mustafiz",
+                IsActive = false,
+                ProductProps = new()
+            {
+                new DemoProductProp{Id=1, Key="Flavor", Value="Beli"},
+                new DemoProductProp{Id=2, Key="Color", Value="White"},
+                new DemoProductProp{Id=3, Key="Size", Value="36"},
+            }
+            });
+        Products.Add(new()
+            {
+                Id = 3,
+                Name = "kamruzzaman",
+                IsActive = true,
+                ProductProps = new()
+            {
+                new DemoProductProp{Id=1, Key="Flavor", Value="Beli"},
+                new DemoProductProp{Id=2, Key="Color", Value="White"},
+                new DemoProductProp{Id=3, Key="Size", Value="30"},
+            }
+            });
+    }
+
+}
