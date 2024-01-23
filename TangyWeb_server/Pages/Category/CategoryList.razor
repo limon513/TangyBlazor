@@ -5,7 +5,7 @@
         <h4 class="text-primary">Category List</h4>
     </div>
     <div class="col-4 offset-2">
-        <a href="/category/create" class="btn btn-primary float-end">Add to Category</a>
+        <a href="/category/create" class="btn btn-primary float-end @addCategoryDisabled">Add to Category</a>
     </div>
 </div>
 @if(deleteClicked){
@@ -33,7 +33,7 @@
                             @category.Name
                         </td>
                         <td>
-                            <NavLink class="btn btn-primary" href="@($"/category/create/{category.Id}")">Edit</NavLink>
+                            <NavLink class="btn btn-primary" href="@($"/category/edit/{category.Id}")">Edit</NavLink>
                         </td>
                         <td>
                             <button class="btn btn-danger" @onclick="()=>ToggleDelete(category)">Delete</button>
@@ -63,17 +63,22 @@
     private bool isLoaded { get; set; } = false;
     private bool deleteClicked { get; set; } = false;
     private CategoryDTO categoryDTO { get; set; } = new CategoryDTO();
+    private string addCategoryDisabled { get; set; } = "disabled";
 
 
-
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await Task.Run(LoadCategories);
+        if (firstRender)
+        {
+            await LoadCategories();
+        }
     }
-    private void LoadCategories()
+    private async Task LoadCategories()
     {
-        categoryDTOs = _categoryrepo.GetAll();
+        categoryDTOs = await _categoryrepo.GetAll();
         isLoaded = true;
+        addCategoryDisabled = "";
+        StateHasChanged();
     }
     private void ToggleDelete(CategoryDTO categoryDTO)
     {
@@ -81,13 +86,16 @@
         this.categoryDTO = categoryDTO;
     }
 
-    private void DeleteHandle(bool confirmDelete)
+    private async Task DeleteHandle(bool confirmDelete)
     {
         if (confirmDelete)
         {
-            _categoryrepo.Delete(categoryDTO.Id);
-            LoadCategories();
+            isLoaded = false;
+            await _categoryrepo.Delete(categoryDTO.Id);
             deleteClicked = false;
+            await LoadCategories();
+            isLoaded = true;
+
         }
         else
         {
