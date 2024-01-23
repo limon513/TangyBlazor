@@ -1,5 +1,6 @@
 ﻿@page "/category/create"
 @page "/category/create/{Id:int}"
+@page "/category/edit/{Id:int}"
 
 @inject ICategoryRepository _categoryrepo
 @inject NavigationManager _nav
@@ -39,36 +40,43 @@
     public int Id { get; set; } = 0;
     private bool isLoaded { get; set; } = true;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        if(Id!=0)
+        if (Id != 0)
         {
             Title = "Edit"; isLoaded = false;
         }
-        await Task.Run(LoadToUpdate);
     }
-    void LoadToUpdate()
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadToUpdate();
+        }
+    }
+    private async Task LoadToUpdate()
     {
         if (Id != 0)
         {
-            categoryDTO = _categoryrepo.GetById(Id);
+            categoryDTO = await _categoryrepo.GetById(Id);
             isLoaded = true;
+            StateHasChanged();
         }
     }
 
-    void UpsertCategory()
+    private async Task UpsertCategory()
     {
+        isLoaded = false;
         if (Id != 0)
         {
-            isLoaded = false;
-            _categoryrepo.Update(categoryDTO);
+            await _categoryrepo.Update(categoryDTO);
             isLoaded = true;
             _nav.NavigateTo("/category");
         }
         else
         {
-            isLoaded = false;
-            _categoryrepo.Create(categoryDTO);
+            await _categoryrepo.Create(categoryDTO);
             isLoaded = true;
             _nav.NavigateTo("/category");
         }
