@@ -8,6 +8,9 @@
         <a href="/category/create" class="btn btn-primary float-end">Add to Category</a>
     </div>
 </div>
+@if(deleteClicked){
+    <_DeleteConfirmation categoryDTO="@categoryDTO" onDeleteClick="DeleteHandle"></_DeleteConfirmation>
+}
 <div class="row mt-2 p-3 border border-1 rounded-2 border-secondary">
     @if (categoryDTOs.Any())
     {
@@ -32,6 +35,9 @@
                         <td>
                             <NavLink class="btn btn-primary" href="@($"/category/create/{category.Id}")">Edit</NavLink>
                         </td>
+                        <td>
+                            <button class="btn btn-danger" @onclick="()=>ToggleDelete(category)">Delete</button>
+                        </td>
                     </tr>
                 }
             </tbody>
@@ -55,6 +61,11 @@
 @code {
     private IEnumerable<CategoryDTO> categoryDTOs { get; set; } = new List<CategoryDTO>();
     private bool isLoaded { get; set; } = false;
+    private bool deleteClicked { get; set; } = false;
+    private CategoryDTO categoryDTO { get; set; } = new CategoryDTO();
+
+
+
     protected override async Task OnInitializedAsync()
     {
         await Task.Run(LoadCategories);
@@ -63,5 +74,24 @@
     {
         categoryDTOs = _categoryrepo.GetAll();
         isLoaded = true;
+    }
+    private void ToggleDelete(CategoryDTO categoryDTO)
+    {
+        deleteClicked = true;
+        this.categoryDTO = categoryDTO;
+    }
+
+    private void DeleteHandle(bool confirmDelete)
+    {
+        if (confirmDelete)
+        {
+            _categoryrepo.Delete(categoryDTO.Id);
+            LoadCategories();
+            deleteClicked = false;
+        }
+        else
+        {
+            deleteClicked = false;
+        }
     }
 }
