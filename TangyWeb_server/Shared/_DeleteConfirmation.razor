@@ -10,7 +10,7 @@
 
             <!-- Modal body -->
             <div class="modal-body">
-                <p>Are you sure to delete @categoryDTO.Name with id @categoryDTO.Id</p>
+                <p>Are you sure to delete!</p>
             </div>
 
             <!-- Modal footer -->
@@ -25,9 +25,6 @@
 <hr />
 @code
 {
-    [Parameter]
-    public CategoryDTO categoryDTO { get; set; } = new CategoryDTO();
-
     [Parameter]
     public EventCallback<bool> onDeleteClick { get; set; }
 
