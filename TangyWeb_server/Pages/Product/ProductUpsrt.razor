@@ -5,18 +5,20 @@
 @inject IProductRepository _productrepo
 @inject ICategoryRepository _categoryrepo
 @inject NavigationManager _nav
+@inject IFileUpload _fileupload
+@inject IToastService _toastService
 
 <div class="row">
     <h3 class="text-primary">@Title Product</h3>
-    @if (!isLoaded)
-    {
-        <div id="loadingGif">
-            <img src="Hourglass.gif" />
-        </div>
-    }
-    else
-    {
-        <div class="col-6">
+    <div class="col-10">
+        @if (!isLoaded)
+        {
+            <div id="loadingGif">
+                <img src="Hourglass.gif" />
+            </div>
+        }
+        else
+        {
             <EditForm Model="productDTO" OnValidSubmit="UpsertProduct">
                 <DataAnnotationsValidator />
                 <div class="form-group">
@@ -33,33 +35,37 @@
 
                 <div class="form-group">
                     <titel>Desctiption</titel>
-                    <InputTextArea @bind-Value="productDTO.Description" class="form-control"></InputTextArea>
+                    <SfRichTextEditor @bind-Value="productDTO.Description" class="form-control"></SfRichTextEditor>
                     <ValidationMessage For="()=>productDTO.Description" />
                 </div>
                 <div class="row">
-                    <div class="form-group col-6">
+                    <div class="form-group col-6 mt-2">
                         <div class="form-check">
                             <InputCheckbox @bind-Value="productDTO.ShopFavourtie" class="form-check-input"></InputCheckbox>
                             <label class="form-check-label">Is Shop Favourite</label>
                         </div>
                     </div>
-                    <div class="form-group col-6">
+                    <div class="form-group col-6 mt-2">
                         <div class="form-check">
                             <InputCheckbox @bind-Value="productDTO.CustomerFavourite" class="form-check-input"></InputCheckbox>
                             <label class="form-check-label">Is Customer Favourite</label>
                         </div>
                     </div>
-                    <div class="form-group col-6">
+                    <div class="form-group col-6 mt-2">
                         <label>Category</label>
                         <InputSelect @bind-Value="productDTO.CategoryId">
                             <option value="0" disabled="disabled" selected>--select category--</option>
-                            @foreach(var cat in Categories)
+                            @foreach (var cat in Categories)
                             {
                                 <option value="@cat.Id">@cat.Name</option>
                             }
                         </InputSelect>
                         <ValidationMessage For="()=>productDTO.CategoryId"></ValidationMessage>
                     </div>
+                    <div class="form-group col-6 pt-2">
+                        <InputFile OnChange="HandleImageUpload" accept="image/*"></InputFile>
+                    </div>
+                    <ValidationMessage For="()=>productDTO.ImageUrl"></ValidationMessage>
                 </div>
 
                 <div class="form-group mt-2">
@@ -67,18 +73,26 @@
                     <NavLink href="/product" class="btn btn-secondary">Back to Index</NavLink>
                 </div>
             </EditForm>
-        </div>
-    }
+        }
+    </div>
+    <div class="col-2 imagepreview">
+        <img src="@productDTO.ImageUrl" id="imagepreview" />
+    </div>
 
 </div>
 
 @code {
     private string Title { get; set; } = "Create";
-    private ProductDTO productDTO { get; set; } = new ProductDTO();
+    private ProductDTO productDTO { get; set; } = new ProductDTO()
+        {
+            ImageUrl = "/productimage/default.png"
+        };
     private IEnumerable<CategoryDTO> Categories { get; set; } = new List<CategoryDTO>();
     [Parameter]
     public int Id { get; set; } = 0;
     private bool isLoaded { get; set; } = true;
+    private string oldImgUrl { get; set; }
+
 
     protected override void OnInitialized()
     {
@@ -102,6 +116,7 @@
         if (Id != 0)
         {
             productDTO = await _productrepo.GetById(Id);
+            oldImgUrl = productDTO.ImageUrl;
             isLoaded = true;
             StateHasChanged();
         }
@@ -112,15 +127,51 @@
         isLoaded = false;
         if (Id != 0)
         {
+            if (oldImgUrl != productDTO.ImageUrl)
+            {
+                _fileupload.DeleteFile(oldImgUrl);
+            }
             await _productrepo.Update(productDTO);
             isLoaded = true;
+            _toastService.ShowSuccess("Product Updated Successfully!");
             _nav.NavigateTo("/product");
         }
         else
         {
             await _productrepo.Create(productDTO);
             isLoaded = true;
+            _toastService.ShowSuccess("Product created Successfully");
             _nav.NavigateTo("/product");
+        }
+    }
+
+    private async Task HandleImageUpload(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            if (e.GetMultipleFiles().Count > 0)
+            {
+                foreach (var file in e.GetMultipleFiles())
+                {
+                    FileInfo fileInfo = new(file.Name);
+                    if (fileInfo.Extension.ToLower() == ".jpg" ||
+                        fileInfo.Extension.ToLower() == ".png" ||
+                        fileInfo.Extension.ToLower() == ".jpeg")
+                    {
+                        productDTO.ImageUrl = await _fileupload.UploadFile(file);
+                    }
+                    else
+                    {
+                        _toastService.ShowError("Please select .jpg/.png/.jpeg only");
+                        return;
+                    }
+                }
+            }
+        }
+        catch (Exception exception)
+        {
+            _toastService.ShowError(exception.Message);
+            return;
         }
     }
 }

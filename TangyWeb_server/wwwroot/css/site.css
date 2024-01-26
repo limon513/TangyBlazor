@@ -69,3 +69,13 @@ a, .btn-link {
     display:flex;
     
 }
+
+.imagepreview {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#imagepreview{
+    width:150px;
+}

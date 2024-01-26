@@ -1,5 +1,7 @@
 ﻿@page "/product"
 @inject IProductRepository _productrepo
+@inject IFileUpload _filehandle
+@inject IToastService _toast
 <div class="row">
     <div class="col-6 ">
         <h4 class="text-primary">Product List</h4>
@@ -108,10 +110,15 @@
     {
         if (confirmDelete)
         {
+            if (!productDTO.ImageUrl.Contains("default.png"))
+            {
+                _filehandle.DeleteFile(productDTO.ImageUrl);
+            }
             isLoaded = false;
             await _productrepo.Delete(productDTO.Id);
             deleteClicked = false;
             await LoadProducts();
+            _toast.ShowInfo("Product Delete Successfull!");
             isLoaded = true;
 
         }

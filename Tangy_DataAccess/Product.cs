@@ -17,7 +17,7 @@ namespace Tangy_DataAccess
         public bool ShopFavourtie { get; set; }
         public bool CustomerFavourite {  get; set; }
         public string Color { get; set; }
-        public string? ImageUrl {  get; set; }
+        public string ImageUrl {  get; set; }
         public int CategoryId {  get; set; }
         [ForeignKey("CategoryId")]
         public Category Category { get; set; }

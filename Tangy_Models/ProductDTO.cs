@@ -17,7 +17,9 @@ namespace Tangy_Models
         public string Description { get; set; }
         public bool ShopFavourtie { get; set; }
         public bool CustomerFavourite { get; set; }
+        [Required(ErrorMessage ="Color de beda!")]
         public string Color { get; set; }
+        [Required(ErrorMessage ="Image dibo kigu halarhala")]
         public string ImageUrl { get; set; }
         [Range(1,int.MaxValue,ErrorMessage ="Please select a category...")]
         public int CategoryId { get; set; }

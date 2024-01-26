@@ -25,7 +25,7 @@
     public bool ShowProperty { get; set; } = false;
     [Parameter]
     public EventCallback<bool> OnFavouriteChange {get; set;}
-    public async Task FavouriteChange(ChangeEventArgs e)
+    public async Task FavouriteChange(Microsoft.AspNetCore.Components.ChangeEventArgs e)
     {
         await OnFavouriteChange.InvokeAsync((bool)e.Value);
     }
