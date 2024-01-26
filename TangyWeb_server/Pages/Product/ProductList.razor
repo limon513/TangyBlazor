@@ -1,0 +1,130 @@
+﻿@page "/product"
+@inject IProductRepository _productrepo
+@inject IFileUpload _filehandle
+@inject IToastService _toast
+<div class="row">
+    <div class="col-6 ">
+        <h4 class="text-primary">Product List</h4>
+    </div>
+    <div class="col-4 offset-2">
+        <a href="/product/create" class="btn btn-primary float-end @addProductDisabled">Add to Product</a>
+    </div>
+</div>
+@if(deleteClicked){
+    <_DeleteConfirmation onDeleteClick="DeleteHandle"></_DeleteConfirmation>
+}
+<div class="row mt-2 p-3 border border-1 rounded-2 border-secondary">
+    @if (productDTOs.Any())
+    {
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>
+                        Product Name
+                    </th>
+                    <th>
+                        Shop Favourite
+                    </th>
+                    <th>
+                        Customer Favourite
+                    </th>
+                    <th>
+                        Category
+                    </th>
+                    <th>
+                        Action
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var product in productDTOs)
+                {
+                    <tr>
+                        <td>
+                            @product.Name
+                        </td>
+                        <td>
+                            <input type="checkbox" disabled checked="@product.ShopFavourtie"/>
+                        </td>
+                        <td>
+                            <input type="checkbox" disabled checked="@product.CustomerFavourite" />
+                        </td>
+                        <td>
+                            @product.Category.Name
+                        </td>
+                        <td>
+                            <NavLink class="btn btn-primary" href="@($"/product/edit/{product.Id}")">Edit</NavLink>
+                        </td>
+                        <td>
+                            <button class="btn btn-danger" @onclick="()=>ToggleDelete(product)">Delete</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        if (!isLoaded)
+        {
+            <div class="loadingGif col-6 offset-5">
+                <img src="Hourglass.gif"/>
+            </div>
+        }
+        else
+        {
+            <p>Nothing to Show....</p>
+        }
+    }
+</div>
+
+@code {
+    private IEnumerable<ProductDTO> productDTOs { get; set; } = new List<ProductDTO>();
+    private bool isLoaded { get; set; } = false;
+    private bool deleteClicked { get; set; } = false;
+    private ProductDTO productDTO { get; set; } = new ProductDTO();
+    private string addProductDisabled { get; set; } = "disabled";
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadProducts();
+        }
+    }
+    private async Task LoadProducts()
+    {
+        productDTOs = await _productrepo.GetAll();
+        isLoaded = true;
+        addProductDisabled = "";
+        StateHasChanged();
+    }
+    private void ToggleDelete(ProductDTO productDTO)
+    {
+        deleteClicked = true;
+        this.productDTO = productDTO;
+    }
+
+    private async Task DeleteHandle(bool confirmDelete)
+    {
+        if (confirmDelete)
+        {
+            if (!productDTO.ImageUrl.Contains("default.png"))
+            {
+                _filehandle.DeleteFile(productDTO.ImageUrl);
+            }
+            isLoaded = false;
+            await _productrepo.Delete(productDTO.Id);
+            deleteClicked = false;
+            await LoadProducts();
+            _toast.ShowInfo("Product Delete Successfull!");
+            isLoaded = true;
+
+        }
+        else
+        {
+            deleteClicked = false;
+        }
+    }
+}
